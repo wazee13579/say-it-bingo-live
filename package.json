@@ -1,0 +1,13 @@
+{
+  "name": "say-it-bingo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone live Bingo with a host-controlled reset",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "test": "node --test"
+  }
+}

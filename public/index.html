@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#181025">
+<meta name="description" content="A free-to-share sayings Bingo game with random cards, a live leaderboard and host-only reset controls.">
+<meta property="og:title" content="SAY IT! BINGO — Hear it. Mark it. Win it.">
+<meta property="og:description" content="Join our live Bingo room. No sign-up required.">
+<title>SAY IT! BINGO — The Office Edition</title>
+<link rel="stylesheet" href="/style.css">
+<script type="module" src="/app.js"></script>
+</head>
+<body>
+<div class="ambient ambient-a" aria-hidden="true"></div><div class="ambient ambient-b" aria-hidden="true"></div>
+<main class="wrap">
+  <header class="top">
+    <a class="wordmark" href="/" aria-label="Say It Bingo homepage">
+      <span class="eyebrow">THE TOTALLY UNOFFICIAL EDITION</span>
+      <span class="logo">SAY IT<span>!</span> BINGO<span class="period">.</span></span>
+    </a>
+    <span class="connection" id="connection"><span class="status-dot"></span><span id="connection-label">READY TO PLAY</span></span>
+  </header>
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="micro-title"><span class="spark">✳</span> THE SAME TEN SAYINGS. ENDLESS POSSIBILITIES.</div>
+    <h1 id="hero-title">Same sayings.<br><span>Different day.</span></h1>
+    <p>That phrase again? Mark your square. Race your mates to five in a row, climb the leaderboard, and claim your bragging rights.</p>
+  </section>
+
+  <section id="landing" class="landing card">
+    <div class="landing-icon" aria-hidden="true">🎯</div>
+    <div class="eyebrow accent-text">ONE LINK. EVERYONE'S INVITED.</div>
+    <h2>Ready for another round?</h2>
+    <p>Create your game room, get a link to share, and let everyone join without signing into anything.</p>
+    <button id="create-room" class="button button-primary button-wide">CREATE A NEW BINGO ROOM <span aria-hidden="true">↗</span></button>
+    <div class="tiny-note">The person creating the room gets the private host controls.</div>
+  </section>
+
+  <section id="game-area" class="layout hidden" aria-label="Bingo game">
+    <div class="card game-card">
+      <div class="card-heading">
+        <div>
+          <div class="eyebrow accent-text">YOUR CARD / YOUR RULES</div>
+          <h2 id="card-heading">YOUR BINGO CARD</h2>
+        </div>
+        <div class="room-label" id="room-label"></div>
+      </div>
+      <div id="bingo-banner" class="bingo-banner hidden" role="status">🎉 BINGO! FIVE IN A ROW! 🎉</div>
+      <div class="letters" aria-hidden="true"><span>B</span><span>I</span><span>N</span><span>G</span><span>O</span></div>
+      <div id="board" class="board" aria-label="Your 5 by 5 bingo card"></div>
+      <div class="score-strip">
+        <div class="stat"><strong id="stat-streak">0<span>/5</span></strong><small>LONGEST STREAK</small></div>
+        <div class="stat"><strong id="stat-marked">0</strong><small>SQUARES MARKED</small></div>
+        <div class="stat"><strong id="stat-bingos">0</strong><small>COMPLETED BINGOS</small></div>
+      </div>
+      <div class="card-tools">
+        <button class="button button-muted" id="clear-card" type="button">↶ Clear marks</button>
+        <button class="button button-primary" id="shuffle-card" type="button">🎲 RANDOMISE MY CARD</button>
+      </div>
+      <p class="helper">Hear it? Tap it! Complete any row, column, or diagonal. Randomising resets your own progress, not anyone else's.</p>
+    </div>
+
+    <aside class="side">
+      <section class="card leaderboard-card">
+        <div class="card-heading">
+          <div><div class="eyebrow accent-text">IN IT TO WIN IT</div><h2>🏆 LEADERBOARD</h2></div>
+          <span class="player-count" id="player-count">0 PLAYERS</span>
+        </div>
+        <div id="leaders" class="leaders" aria-live="polite">
+          <p class="no-players">Awaiting the first player…</p>
+        </div>
+        <div class="progress"><div id="progress-fill" class="progress-fill"></div></div>
+        <p class="small-description">Your longest streak toward five in a row. Rankings update live for everyone in this room.</p>
+      </section>
+      <section class="card invite-card">
+        <div class="eyebrow accent-text">PASS IT ON</div>
+        <h2>Invite the gang.</h2>
+        <p>No accounts. No permissions. Just the same live game, with a different random card for each person.</p>
+        <div class="invite-input-row">
+          <input type="text" id="invite-url" readonly aria-label="Public invitation link">
+          <button class="button button-primary" id="copy-invite" type="button">COPY LINK</button>
+        </div>
+        <div class="copy-feedback" id="copy-feedback" role="status"></div>
+      </section>
+      <section id="host-panel" class="card host-card hidden">
+        <div class="host-heading"><div><div class="eyebrow accent-text">YOU'RE THE HOST</div><h2>Host controls <span>★</span></h2></div><span class="host-chip">PRIVATE</span></div>
+        <p>You can end this round, kick every player and create an entirely new game invitation.</p>
+        <button id="kick-all" class="button button-danger button-wide" type="button">⛔ KICK EVERYONE + NEW LINK</button>
+        <button id="copy-host" class="host-recovery" type="button">Copy my private host recovery link</button>
+        <p class="safety">Never share your host recovery link — it gives control of the room to anyone who has it.</p>
+      </section>
+    </aside>
+  </section>
+  <footer>WORKPLACE CATCHPHRASES. COMPETITIVE CONSEQUENCES. <span>✳</span></footer>
+</main>
+
+<div id="overlay" class="overlay hidden">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <span class="modal-icon" id="modal-icon" aria-hidden="true">🎯</span>
+    <div class="eyebrow accent-text" id="modal-kicker">WELCOME TO THE GAME</div>
+    <h2 id="modal-title">Who's playing?</h2>
+    <p id="modal-copy">Enter your name to appear on the leaderboard and receive your random Bingo card.</p>
+    <form id="join-form">
+      <input id="name-input" name="name" type="text" maxlength="28" placeholder="Your name" required autocomplete="nickname">
+      <button class="button button-primary button-wide" type="submit">LET'S PLAY <span aria-hidden="true">→</span></button>
+    </form>
+    <div id="new-link-actions" class="new-link-actions hidden">
+      <input type="text" id="new-link" readonly aria-label="New invitation link">
+      <button class="button button-primary button-wide" id="copy-new" type="button">COPY NEW INVITE LINK</button>
+      <button class="button button-muted button-wide" id="back-to-game" type="button">BACK TO MY GAME</button>
+    </div>
+    <p id="modal-error" class="modal-error" role="alert"></p>
+  </section>
+</div>
+<div id="toast" class="toast hidden" role="status"></div>
+</body>
+</html>
