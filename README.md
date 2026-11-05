@@ -4,7 +4,7 @@ This is a **complete Bingo website with its own Node.js multiplayer server**. It
 
 ## Included
 
-- Exactly **25 squares** on a 5×5 Bingo card, populated from your 10 sayings
+- Exactly **25 squares** on a 5×5 Bingo card, populated from your editable `sayings.txt` list
 - A fresh **random card for every new player/tab**, with a Randomise My Card button
 - A **name prompt** for each new player; no account required
 - A **live leaderboard** synced to all connected players using server-sent events (SSE)
@@ -14,6 +14,18 @@ This is a **complete Bingo website with its own Node.js multiplayer server**. It
 - Old room links are **invalidated on the server**; players cannot sneak back into the ended room
 - Host permission is controlled by a private recovery link and an unguessable key; never included in public invitation links
 - No external npm dependencies; Node.js 20+ is sufficient
+
+## Add or change sayings (ONE file)
+
+Open **`sayings.txt`** in the main directory (next to `server.mjs`) and put **one saying per line**. Add new lines or remove old sayings, then save it. No code changes are needed.
+
+To edit on GitHub: open `sayings.txt` → click the pencil (Edit this file) → update the lines → **Commit changes**. Render redeploys automatically from the `main` branch, using the free web service you've connected.
+
+- Blank lines are ignored; repeated identical lines are treated as a single saying.
+- Use at least **two different sayings**; the game needs variety to randomise a card.
+- Cards always have **25 squares**. With fewer than 25 sayings, some repeat; with 25 or more, each card uses 25 different sayings drawn at random.
+- New sayings affect **newly created or randomised player cards** after the redeployment. Players' existing cards keep their previous sayings until they randomise.
+- **Important on free Render hosting:** every redeployment restarts the server, and old rooms/scores/host links may be lost because its storage is temporary. Finish an active game before editing this file. Create a new room after redeploying.
 
 ## Test it on your computer
 
@@ -84,6 +96,8 @@ Keep this website at **one server instance**; its file-based state and SSE conne
 - Players' names, cards, and hashed access credentials are stored in the server's JSON state file. Keep that file private, and do not commit it to GitHub.
 
 ## Files
+
+`sayings.txt` — **the only file to edit to add or remove Bingo sayings**
 
 `server.mjs` — HTTP, game rules, persistence, server validation and live updates
 

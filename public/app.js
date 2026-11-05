@@ -1,9 +1,4 @@
 const $ = (id) => document.getElementById(id);
-const SAYINGS = [
-  'AAAAAHHHHH', 'LIVIN THE DREAM', 'IM LOVIN IT', 'HAAARRRRRYYYY',
-  'AAALLLLLIIIII', 'AAAAAHHHHH RIGHT', 'CAN I BORROW YOU FOR A MIN',
-  'AHHHHHH OK', 'CAN I STEAL YOUR BRAIN', 'YEP',
-];
 let roomCode = null, ownerKey = null, playerKey = null, player = null, eventSource = null;
 let gameInfo = { leaderboard: [] };
 let rotating = false;
@@ -107,7 +102,7 @@ function renderLeaderboard(entries = []) {
 function renderPlayer() {
   const board = $('board');
   board.replaceChildren();
-  const words = player?.board || SAYINGS.concat(SAYINGS, SAYINGS.slice(0, 5));
+  const words = player?.board || Array(25).fill('');
   const marks = player?.marks || Array(25).fill(false);
   const win = new Set(player?.stats?.winningCells || []);
   for (let i = 0; i < 25; i++) {

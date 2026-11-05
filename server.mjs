@@ -5,11 +5,18 @@ import { fileURLToPath } from 'node:url';
 import { randomBytes, randomInt, createHash, timingSafeEqual } from 'node:crypto';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const SAYINGS = [
-  'AAAAAHHHHH', 'LIVIN THE DREAM', 'IM LOVIN IT', 'HAAARRRRRYYYY',
-  'AAALLLLLIIIII', 'AAAAAHHHHH RIGHT', 'CAN I BORROW YOU FOR A MIN',
-  'AHHHHHH OK', 'CAN I STEAL YOUR BRAIN', 'YEP',
-];
+// Edit sayings.txt (one saying per line) to change future Bingo cards.
+// Existing player cards remain unchanged until the player randomises or rejoins.
+function loadSayings(file) {
+  const words = [...new Set(readFileSync(file, 'utf8')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean))];
+  if (words.length < 2) {
+    throw new Error('sayings.txt must contain at least two different sayings.');
+  }
+  return words;
+}
 const LINES = [
   ...Array.from({ length: 5 }, (_, r) => Array.from({ length: 5 }, (_, c) => r * 5 + c)),
   ...Array.from({ length: 5 }, (_, c) => Array.from({ length: 5 }, (_, r) => r * 5 + c)),
@@ -24,19 +31,23 @@ function keyMatches(key, storedHash) {
   const b = Buffer.from(storedHash, 'hex');
   return a.length === b.length && timingSafeEqual(a, b);
 }
-function shuffle() {
-  const a = Array.from({ length: 25 }, (_, i) => SAYINGS[i % SAYINGS.length]);
+function shuffle(sayings) {
+  // With 25+ sayings, choose 25 different sayings without replacement.
+  // With fewer than 25, repeat them evenly to fill the card.
+  const a = sayings.length >= 25
+    ? [...sayings]
+    : Array.from({ length: 25 }, (_, i) => sayings[i % sayings.length]);
   for (let i = a.length - 1; i > 0; i--) {
     const j = randomInt(i + 1);
     [a[i], a[j]] = [a[j], a[i]];
   }
-  return a;
+  return a.slice(0, 25);
 }
-function differentShuffle(previous) {
-  const a = shuffle();
+function differentShuffle(previous, sayings) {
+  const a = shuffle(sayings);
   if (previous && a.every((v, i) => v === previous[i])) {
     const j = a.findIndex((v) => v !== a[0]);
-    [a[0], a[j]] = [a[j], a[0]];
+    if (j > 0) [a[0], a[j]] = [a[j], a[0]];
   }
   return a;
 }
@@ -88,6 +99,7 @@ async function bodyJson(req) {
 }
 
 export function createApp(options = {}) {
+  const sayings = loadSayings(options.sayingsFile || join(here, 'sayings.txt'));
   const stateFile = options.stateFile || process.env.STATE_FILE || join(here, 'data', 'state.json');
   let store = { rooms: {} };
   if (existsSync(stateFile)) {
@@ -183,7 +195,7 @@ export function createApp(options = {}) {
       if (!safeName(body.name)) return error(res, 400, 'Enter a name between 1 and 28 characters.');
       if (Object.keys(room.players).length >= 150) return error(res, 403, 'Room is full');
       const id = asId(), playerKey = asKey();
-      const p = { id, keyHash: digest(playerKey), name: body.name.trim(), board: shuffle(), marks: Array(25).fill(false), joinedAt: Date.now() };
+      const p = { id, keyHash: digest(playerKey), name: body.name.trim(), board: shuffle(sayings), marks: Array(25).fill(false), joinedAt: Date.now() };
       room.players[id] = p; save(); broadcast(code, snapshot(room));
       return responseJson(res, 201, { playerKey, player: privatePlayer(p), leaderboard: leaderboard(room) });
     }
@@ -206,7 +218,7 @@ export function createApp(options = {}) {
       if (!Number.isInteger(body.cell) || body.cell < 0 || body.cell >= 25) return error(res, 400, 'Invalid tile');
       p.marks[body.cell] = !p.marks[body.cell];
     } else if (action === 'shuffle') {
-      p.board = differentShuffle(p.board); p.marks = Array(25).fill(false);
+      p.board = differentShuffle(p.board, sayings); p.marks = Array(25).fill(false);
     } else if (action === 'clear') {
       p.marks = Array(25).fill(false);
     } else return error(res, 404, 'Unknown action');

@@ -112,3 +112,32 @@ test('players and rooms persist when the server restarts using the same data fil
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('editable sayings file controls new cards and samples 25 unique sayings', async () => {
+  const { writeFileSync } = await import('node:fs');
+  const dir = mkdtempSync(join(tmpdir(), 'sayit-words-'));
+  const sayingsFile = join(dir, 'custom-sayings.txt');
+  writeFileSync(sayingsFile, Array.from({ length: 30 }, (_, i) => `SAYING ${i + 1}`).join('\n') + '\n');
+  const server = createApp({ stateFile: join(dir, 'state.json'), sayingsFile });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const base = `http://127.0.0.1:${server.address().port}`;
+    const post = async (path, payload) => {
+      const res = await fetch(base + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+      assert.equal(res.status, path === '/api/rooms' || path.endsWith('/join') ? 201 : 200);
+      return res.json();
+    };
+    const room = await post('/api/rooms', {});
+    const path = '/api/rooms/' + room.code;
+    const joined = await post(path + '/join', { name: 'Tester' });
+    assert.equal(joined.player.board.length, 25);
+    assert.equal(new Set(joined.player.board).size, 25);
+    assert.ok(joined.player.board.every((word) => /^SAYING \d+$/.test(word)));
+    const changed = await post(path + '/shuffle', { playerId: joined.player.id, playerKey: joined.playerKey });
+    assert.equal(new Set(changed.player.board).size, 25);
+    assert.notDeepEqual(changed.player.board, joined.player.board);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
